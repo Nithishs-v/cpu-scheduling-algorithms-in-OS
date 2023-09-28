@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MS-ENTERPRISES</title>
+  <link rel="stylesheet" href="FIFO.css">
+</head>
+
+<body>
+  <div class="menu_bar">
+    <h1 class="logo">MS-<span>Enterprises</span></h1>
+    <ul>
+            <li><a href="home.html">HOME</a></li>
+            <li><a href="fifo.html">FIFO</a></li>
+            <li><a href="sjf.html">SJF</a></li>
+            <li><a href="strf.html">SRTF</a></li>
+            <li><a href="rr.html">RR</a></li>
+     </ul>
+</div>
+
+<div class="loader">
+    <p class="w">
+        SHORTEST JOB FIRST ALGORITHM
+    </p>
+</div>
+
+
+<form class="inpt" id="process-form">
+    <div class="input-container">
+      <label class="p" for="process-count">Number of Processes:</label>
+      <input class="inptbox" type="number" id="process-count" min="1" required>
+      <button class="bt" type="submit">Calculate</button>
+    </div>
+    <br><br>
+    <div id="process-details"></div>
+  </form>
+  
+
+  <table id="scheduling-table">
+    <thead>
+      <tr>
+        <th>Process</th>
+        <th>Arrival Time</th>
+        <th>Burst Time</th>
+        <th>Waiting Time</th>
+        <th>Turnaround Time</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <p class="res1" id="average-waiting-time"></p>
+  <p class="res2" id="average-turnaround-time"></p>
+
+  <script src="SJF.js"></script>
+
+</body>
+</html>

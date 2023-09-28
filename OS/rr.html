@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MS-ENTERPRISES</title>
+    <link rel="stylesheet" href="RR.css">
+</head>
+
+<body>
+  <div class="menu_bar">
+    <h1 class="logo">MS-<span>Enterprises</span></h1>
+    <ul>
+      <li><a href="home.html">HOME</a></li>
+      <li><a href="fifo.html">FIFO</a></li>
+      <li><a href="sjf.html">SJF</a></li>
+      <li><a href="strf.html">SRTF</a></li>
+      <li><a href="rr.html">RR</a></li>
+    </ul>
+  </div>
+
+  <div class="loader">
+    <p class="w">
+        ROUND ROBIN ALGORITHM
+    </p>
+  </div>
+
+  <form class="inpt" id="process-form">
+    <div class="input-container">
+      <label class="p" for="process-count">Number of Processes:</label>
+      <input class="inptbox" type="number" id="process-count" min="1" required>
+      <label class="p" for="time-quantum">Time Quantum:</label>
+      <input class="inptbox" type="number" id="time-quantum" min="1" required>
+      <button class="bt" type="submit">Calculate</button>
+    </div>
+    <br><br>
+    <div id="process-details"></div>
+  </form>
+
+  <table id="scheduling-table">
+    <thead>
+      <tr>
+        <th>Process</th>
+        <th>Arrival Time</th>
+        <th>Burst Time</th>
+        <th>Waiting Time</th>
+        <th>Turnaround Time</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <p class="res1" id="average-waiting-time"></p>
+  <p class="res2" id="average-turnaround-time"></p>
+
+  <script>
+    class Process {
+      constructor(pid, arrivalTime, burstTime) {
+        this.pid = pid;
+        this.arrivalTime = arrivalTime;
+        this.burstTime = burstTime;
+      }
+    }
+
+    function calculateWaitingTime(processes, timeQuantum) {
+      const n = processes.length;
+      const remainingTime = processes.map((process) => process.burstTime);
+      const waitingTime = new Array(n).fill(0);
+      let complete = 0;
+      let currentTime = 0;
+
+      while (complete < n) {
+        let isProcessExecuted = false;
+
+        for (let i = 0; i < n; i++) {
+          if (remainingTime[i] > 0) {
+            if (remainingTime[i] <= timeQuantum) {
+              currentTime += remainingTime[i];
+              waitingTime[i] = currentTime - processes[i].burstTime - processes[i].arrivalTime;
+              remainingTime[i] = 0;
+              complete++;
+            } else {
+              currentTime += timeQuantum;
+              remainingTime[i] -= timeQuantum;
+            }
+            isProcessExecuted = true;
+          }
+        }
+
+        if (!isProcessExecuted) {
+          currentTime++;
+        }
+      }
+
+      return waitingTime;
+    }
+
+    function calculateTurnaroundTime(processes, waitingTime) {
+      const n = processes.length;
+      const turnaroundTime = new Array(n);
+
+      for (let i = 0; i < n; i++) {
+        turnaroundTime[i] = processes[i].burstTime + waitingTime[i];
+      }
+
+      return turnaroundTime;
+    }
+
+    function calculateAverageTime(processes, timeQuantum) {
+      const n = processes.length;
+      const waitingTime = calculateWaitingTime(processes, timeQuantum);
+      const turnaroundTime = calculateTurnaroundTime(processes, waitingTime);
+
+      const totalWaitingTime = waitingTime.reduce((sum, wt) => sum + wt, 0);
+      const totalTurnaroundTime = turnaroundTime.reduce((sum, tt) => sum + tt, 0);
+
+      const averageWaitingTime = totalWaitingTime / n;
+      const averageTurnaroundTime = totalTurnaroundTime / n;
+
+      return { averageWaitingTime, averageTurnaroundTime };
+    }
+
+    function scheduleProcesses(processes, timeQuantum) {
+      const { averageWaitingTime, averageTurnaroundTime } = calculateAverageTime(processes, timeQuantum);
+      const waitingTime = calculateWaitingTime(processes, timeQuantum);
+      const turnaroundTime = calculateTurnaroundTime(processes, waitingTime);
+
+      const tableBody = document.querySelector('#scheduling-table tbody');
+      tableBody.innerHTML = '';
+
+      processes.forEach((process, i) => {
+        const row = tableBody.insertRow();
+        row.insertCell().textContent = process.pid;
+        row.insertCell().textContent = process.arrivalTime;
+        row.insertCell().textContent = process.burstTime;
+        row.insertCell().textContent = waitingTime[i];
+        row.insertCell().textContent = turnaroundTime[i];
+      });
+
+      document.getElementById('average-waiting-time').textContent = `Average Waiting Time: ${averageWaitingTime.toFixed(2)}`;
+      document.getElementById('average-turnaround-time').textContent = `Average Turnaround Time: ${averageTurnaroundTime.toFixed(2)}`;
+    }
+
+    function createProcessInputs(count) {
+      const processDetails = document.getElementById('process-details');
+      processDetails.innerHTML = '';
+
+      for (let i = 1; i <= count; i++) {
+        const processDiv = document.createElement('div');
+        processDiv.innerHTML = `
+          <h3>Process: ${i}</h3>
+          <label for="arrival-time-${i}">Arrival Time:</label>
+          <input type="number" id="arrival-time-${i}" required>
+          <label for="burst-time-${i}">Burst Time:</label>
+          <input type="number" id="burst-time-${i}" required>
+        `;
+        processDetails.appendChild(processDiv);
+      }
+    }
+
+    document.getElementById('process-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const processCount = parseInt(document.getElementById('process-count').value);
+      const timeQuantum = parseInt(document.getElementById('time-quantum').value);
+      const processes = [];
+
+      for (let i = 1; i <= processCount; i++) {
+        const arrivalTime = parseInt(document.getElementById(`arrival-time-${i}`).value);
+        const burstTime = parseInt(document.getElementById(`burst-time-${i}`).value);
+        processes.push(new Process(i, arrivalTime, burstTime));
+      }
+
+      scheduleProcesses(processes, timeQuantum);
+    });
+
+    document.getElementById('process-count').addEventListener('input', function() {
+      const processCount = parseInt(this.value);
+      if (!isNaN(processCount) && processCount >= 1) {
+        createProcessInputs(processCount);
+      }
+    });
+  </script>
+</body>
+</html>
